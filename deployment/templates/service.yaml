@@ -1,0 +1,159 @@
+---
+AWSTemplateFormatVersion: '2010-09-09'
+
+Metadata:
+  AWS::CloudFormation::Interface:
+    ParameterGroups:
+    - Label:
+        default: Parent Stacks
+      Parameters:
+      - ParentVPCStack
+      - ParentECSStack
+    - Label:
+        default: Service Parameters
+      Parameters:
+      - ContainerName
+      - DesiredCount
+      - CPUReservation
+      - MemoryReservation
+      - HealthCheckGracePeriodSeconds
+    - Label:
+        default: Logging Parameters
+      Parameters:
+      - SplunkToken
+      - SplunkUrl
+      - SplunkEnv
+
+Parameters:
+  ParentVPCStack:
+    Type: String
+
+  ParentECSStack:
+    Type: String
+
+  ContainerName:
+    Type: String
+
+  DesiredCount:
+    Type: Number
+    Default: 1
+
+  HealthCheckGracePeriodSeconds:
+    Type: Number
+    Default: 90
+
+  MemoryReservation:
+    Type: Number
+    Default: 1024
+    AllowedValues: [20, 128, 256, 512, 1024, 1536]
+
+  CPUReservation:
+    Type: Number
+    Default: 128
+    AllowedValues: [10, 128, 256,512,1024]
+
+  SplunkToken:
+    Type: String
+    NoEcho: true
+
+  SplunkUrl:
+    Type: String
+
+  SplunkEnv:
+    Default: Production
+    Type: String
+    AllowedValues: [Development, Production]
+
+Resources:
+  ExternalTargetGroup:
+    Type: AWS::ElasticLoadBalancingV2::TargetGroup
+    Properties:
+      VpcId:
+        'Fn::ImportValue': !Sub '${ParentVPCStack}-VPC'
+      Port: 80
+      Protocol: HTTP
+      Matcher:
+        HttpCode: 200-299
+      HealthCheckIntervalSeconds: 15
+      HealthCheckPath: /sbjb/metrics/ping
+      HealthCheckProtocol: HTTP
+      HealthCheckTimeoutSeconds: 10 # Healthcheck timeout must be smaller than the interval
+      HealthyThresholdCount: 2
+      UnhealthyThresholdCount: 6
+      TargetGroupAttributes:
+        - Key: deregistration_delay.timeout_seconds
+          Value: 300
+
+  ExternalListenerRule:
+    Type: AWS::ElasticLoadBalancingV2::ListenerRule
+    Properties:
+      ListenerArn:
+        'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerListener'
+      Priority: 1
+      Conditions:
+        - Field: path-pattern
+          Values:
+            - /sbjb/*
+      Actions:
+        - TargetGroupArn: !Ref ExternalTargetGroup
+          Type: forward
+
+  ECSServiceRole:
+    Type: AWS::IAM::Role
+    Properties:
+      Path: /
+      AssumeRolePolicyDocument: |
+        {
+            "Statement": [{
+                "Effect": "Allow",
+                "Principal": { "Service": [ "ecs.amazonaws.com" ]},
+                "Action": [ "sts:AssumeRole" ]
+            }]
+        }
+      ManagedPolicyArns:
+        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
+
+  Service:
+    Type: AWS::ECS::Service
+    Properties:
+      Cluster:
+        'Fn::ImportValue': !Sub '${ParentECSStack}-Cluster'
+      Role: !Ref ECSServiceRole
+      DesiredCount: !Ref DesiredCount
+      HealthCheckGracePeriodSeconds: !Ref HealthCheckGracePeriodSeconds
+      PlacementStrategies:
+      - Type: spread
+        Field: 'attribute:ecs.availability-zone'
+      TaskDefinition: !Ref TaskDefinition
+      LoadBalancers:
+      - ContainerName: !Ref ContainerName
+        ContainerPort: 80
+        TargetGroupArn: !Ref ExternalTargetGroup
+
+  TaskDefinition:
+    Type: AWS::ECS::TaskDefinition
+    Properties:
+      Family: !Sub ${AWS::StackName}-Task
+      ContainerDefinitions:
+        - Name: !Ref ContainerName
+          Image: bncprojects/base-healthcheck:v1
+          Essential: true
+          Cpu: !Ref CPUReservation
+          MemoryReservation: !Ref MemoryReservation
+          PortMappings:
+            - ContainerPort: 80
+          LogConfiguration:
+            LogDriver: splunk
+            Options:
+              splunk-format: raw
+              splunk-token: !Ref SplunkToken
+              splunk-url: !Ref SplunkUrl
+              env: !Ref SplunkEnv
+              splunk-insecureskipverify: true
+Outputs:
+  ServiceName:
+    Description: 'The name of the service running the ECS'
+    Value: !Ref Service
+    Export:
+      Name: !Sub '${AWS::StackName}-Name'
+
