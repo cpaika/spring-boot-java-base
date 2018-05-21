@@ -1,16 +1,23 @@
 package com.bnc.sbjb.rest;
 
-import static org.hamcrest.core.IsEqual.equalTo;
-import static org.junit.Assert.assertThat;
-import static org.mockito.Mockito.mock;
+import org.assertj.core.api.Assertions;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.boot.test.context.SpringBootTest;
+import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
+import org.springframework.boot.test.web.client.TestRestTemplate;
+import org.springframework.test.context.junit.jupiter.SpringExtension;
 
-import javax.servlet.http.HttpServletRequest;
-import org.junit.Test;
-
+@SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
+@ExtendWith(SpringExtension.class)
 public class SimpleErrorControllerTest {
 
-    @Test
+    @Autowired
+    private TestRestTemplate template;
+
+    @org.junit.jupiter.api.Test
     public void error() {
-        assertThat(new SimpleErrorController().error(mock(HttpServletRequest.class)), equalTo("404"));
+        String actualResponse = template.getForObject("/invalidurl", String.class);
+        Assertions.assertThat(actualResponse).isEqualTo("404");
     }
 }
