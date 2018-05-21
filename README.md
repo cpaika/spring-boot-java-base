@@ -1,4 +1,6 @@
-[![Build Status](https://travis-ci.com/bnc-projects/spring-boot-java-base.svg?branch=master)]
+[![Build Status](https://travis-ci.com/bnc-projects/spring-boot-java-base.svg?branch=master)](https://travis-ci.com/bnc-projects/spring-boot-java-base)
+[![codecov](https://codecov.io/gh/bnc-projects/spring-boot-java-base/branch/master/graph/badge.svg)](https://codecov.io/gh/bnc-projects/spring-boot-java-base)
+
 
 # Spring Boot Java Base
 
