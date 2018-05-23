@@ -197,8 +197,8 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - echo "Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI}]"
-                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI}
+                - echo "Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}]"
+                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}"
                 - printf '[{"name":"sbjb","imageUri":"%s"}]' "${REPOSITORY_URI}:${TAG}" > images.json
                 - echo [{"name":"sbjb","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
@@ -218,6 +218,9 @@ Resources:
             Value: !Ref AWS::Region
           - Name: REPOSITORY_URI
             Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}
+          - Name: APPLICATION_CONTEXT_ARG
+            Value:
+              'Fn::ImportValue': !Sub "${ParentServiceStack}-ApplicationContext"
       Name: !Sub Java-build-${AWS::StackName}
       ServiceRole: !Ref CodeBuildServiceRole
 

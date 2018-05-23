@@ -9,17 +9,17 @@
 For IDEs run one of the following commands before importing into your IDE.
 
 #### IntelliJ
-```
+```bash
 ./gradlew idea
 ```
 
 #### Eclipse
-```
+```bash
 ./gradlew eclipse
 ```
 
 #### Build & Test
-```
+```bash
 ./gradlew clean assemble check
 ```
 
@@ -29,16 +29,27 @@ For IDEs run one of the following commands before importing into your IDE.
 
 #### Debug / Profiling
 To debug the container locally, add the following line in to the ENTRYPOINT line after `java` and before `-jar`.
-```
+```bash
 "-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
 ```
 Once this has been added build and run the docker container locally.
 
 ### How to: Build production equivalent container
-1. `./gradlew clean assemble check docker dockerTag -PTAG=$(git rev-parse --verify HEAD --short) -PBRANCH=$(git rev-parse --abbrev-ref HEAD) -PREPOSITORY_URI=${DOCKER_REPO}${IMAGE_NAME}`
+```bash
+./gradlew clean assemble check docker dockerTag -PTAG=$(git rev-parse --verify HEAD --short) -PBRANCH=$(git rev-parse --abbrev-ref HEAD) \
+  -PREPOSITORY_URI=${DOCKER_REPO}${IMAGE_NAME}
+```
 
+### How to: Override application context
+The docker build stage in Gradle accepts a parameter called APPLICATION_CONTEXT, which is passed to Spring boot and used in the Docker container
+Healthcheck. 
+
+```bash
+./gradlew clean assemble check docker \
+  -PAPPLICATION_CONTEXT="your-app-context"
+```
 
 ## For more tasks run
-```
+```bash
 ./gradlew tasks
 ```
