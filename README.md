@@ -5,12 +5,9 @@
 
 ## How tos
 
-### How to update the base image
-
-See [docker README](config/docker/README.md).
-
 ### Build and Test
 For IDEs run one of the following commands before importing into your IDE.
+
 #### IntelliJ
 ```
 ./gradlew idea

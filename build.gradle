@@ -108,7 +108,10 @@ docker {
     name "${REPOSITORY_URI}"
     tags "${TAG}", 'latest'
     files jar.archivePath
-    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
+    buildArgs([
+        'JAR_FILE': "${bootJar.archiveName}",
+        'APPLICATION_CONTEXT': "sbjb/"
+    ])
 }
 
 dependencies {

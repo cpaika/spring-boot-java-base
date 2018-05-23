@@ -17,6 +17,8 @@ Metadata:
       - CPUReservation
       - MemoryReservation
       - HealthCheckGracePeriodSeconds
+      - ApplicationContext
+      - ContainerImage
     - Label:
         default: Logging Parameters
       Parameters:
@@ -41,6 +43,14 @@ Parameters:
   HealthCheckGracePeriodSeconds:
     Type: Number
     Default: 90
+
+  ApplicationContext:
+    Type: String
+    Default: sbjb
+
+  ContainerImage:
+    Type: String
+    Default: bncprojects/base-healthcheck:v1
 
   MemoryReservation:
     Type: Number
@@ -75,7 +85,7 @@ Resources:
       Matcher:
         HttpCode: 200-299
       HealthCheckIntervalSeconds: 15
-      HealthCheckPath: /1/ping
+      HealthCheckPath: !Sub /${ApplicationContext}/1/ping
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10 # Healthcheck timeout must be smaller than the interval
       HealthyThresholdCount: 2
@@ -90,7 +100,7 @@ Resources:
       Conditions:
         - Field: path-pattern
           Values:
-            - /sbjb/*
+            - !Sub /${ApplicationContext}/*
       Actions:
         - TargetGroupArn: !Ref ExternalTargetGroup
           Type: forward
@@ -133,7 +143,7 @@ Resources:
       Family: !Sub ${AWS::StackName}-Task
       ContainerDefinitions:
         - Name: !Ref ContainerName
-          Image: bncprojects/base-healthcheck:v1
+          Image: !Ref ContainerImage
           Essential: true
           Cpu: !Ref CPUReservation
           MemoryReservation: !Ref MemoryReservation
@@ -153,3 +163,8 @@ Outputs:
     Value: !Ref Service
     Export:
       Name: !Sub '${AWS::StackName}-Name'
+  ApplicationContext:
+    Description: 'The application context of the service'
+    Value: !Sub "${ApplicationContext}/"
+    Export:
+      Name: !Sub '${AWS::StackName}-ApplicationContext'
