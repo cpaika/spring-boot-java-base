@@ -9,6 +9,7 @@ Metadata:
       Parameters:
       - ParentVPCStack
       - ParentECSStack
+      - ParentAlertStack
     - Label:
         default: Service Parameters
       Parameters:
@@ -29,6 +30,9 @@ Parameters:
     Type: String
 
   ParentECSStack:
+    Type: String
+
+  ParentAlertStack:
     Type: String
 
   ContainerName:
@@ -63,6 +67,9 @@ Parameters:
     Default: Production
     Type: String
     AllowedValues: [Development, Production]
+
+Conditions:
+  HasAlertTopic: !Not [!Equals [!Ref ParentAlertStack, '']]
 
 Resources:
   ExternalTargetGroup:
@@ -147,6 +154,50 @@ Resources:
               splunk-url: !Ref SplunkUrl
               env: !Ref SplunkEnv
               splunk-insecureskipverify: true
+
+  HTTPCodeTarget5XXTooHighAlarm:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: '${AWS::StackName} HTTP 500 response code alarm'
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: HTTPCode_Target_5XX_Count
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      TreatMissingData: notBreaching
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerName'
+      - Name: TargetGroup
+        Value: !GetAtt 'ExternalTargetGroup.TargetGroupFullName'
+  NoHealthyServiceAlarm:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: '${AWS::StackName} has no healthy services'
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: HealthyHostCount
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerName'
+      - Name: TargetGroup
+        Value: !GetAtt 'ExternalTargetGroup.TargetGroupFullName'
+
 Outputs:
   ServiceName:
     Description: 'The name of the service running the ECS'
