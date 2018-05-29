@@ -46,9 +46,6 @@ Parameters:
     Type: String
 
 Resources:
-  Repository:
-    Type: AWS::ECR::Repository
-    DeletionPolicy: Retain
 
   CloudFormationExecutionRole:
     Type: AWS::IAM::Role
@@ -64,33 +61,33 @@ Resources:
             }]
         }
       Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - ecr:GetAuthorizationToken
-              - Resource: !Join ['', [ 'arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
-                Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:GetObjectVersion
-              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}
-                Effect: Allow
-                Action:
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:PutImage
-                  - ecr:InitiateLayerUpload
-                  - ecr:UploadLayerPart
-                  - ecr:CompleteLayerUpload
+      - PolicyName: root
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Resource: "*"
+            Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - ecr:GetAuthorizationToken
+          - Resource: !Join ['', ['arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
+            Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:GetObjectVersion
+          - Resource: !Join ['', ["Fn::Sub": 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
+            Effect: Allow
+            Action:
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
 
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
@@ -105,33 +102,33 @@ Resources:
             }]
         }
       Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - logs:CreateLogGroup
-                  - logs:CreateLogStream
-                  - logs:PutLogEvents
-                  - ecr:GetAuthorizationToken
-              - Resource: !Join ['', [ 'arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
-                Effect: Allow
-                Action:
-                  - s3:GetObject
-                  - s3:PutObject
-                  - s3:GetObjectVersion
-              - Resource: !Sub arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/${Repository}
-                Effect: Allow
-                Action:
-                  - ecr:GetDownloadUrlForLayer
-                  - ecr:BatchGetImage
-                  - ecr:BatchCheckLayerAvailability
-                  - ecr:PutImage
-                  - ecr:InitiateLayerUpload
-                  - ecr:UploadLayerPart
-                  - ecr:CompleteLayerUpload
+      - PolicyName: root
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Resource: "*"
+            Effect: Allow
+            Action:
+            - logs:CreateLogGroup
+            - logs:CreateLogStream
+            - logs:PutLogEvents
+            - ecr:GetAuthorizationToken
+          - Resource: !Join ['', ['arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
+            Effect: Allow
+            Action:
+            - s3:GetObject
+            - s3:PutObject
+            - s3:GetObjectVersion
+          - Resource: !Join ['', ["Fn::Sub": 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
+            Effect: Allow
+            Action:
+            - ecr:GetDownloadUrlForLayer
+            - ecr:BatchGetImage
+            - ecr:BatchCheckLayerAvailability
+            - ecr:PutImage
+            - ecr:InitiateLayerUpload
+            - ecr:UploadLayerPart
+            - ecr:CompleteLayerUpload
 
   CodePipelineServiceRole:
     Type: AWS::IAM::Role
@@ -140,41 +137,41 @@ Resources:
       AssumeRolePolicyDocument:
         Version: 2012-10-17
         Statement:
-          - Effect: Allow
-            Principal:
-              Service: codepipeline.amazonaws.com
-            Action: sts:AssumeRole
+        - Effect: Allow
+          Principal:
+            Service: codepipeline.amazonaws.com
+          Action: sts:AssumeRole
       Policies:
-        - PolicyName: root
-          PolicyDocument:
-            Version: 2012-10-17
-            Statement:
-              - Resource: !Join ['', [ 'arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
-                Effect: Allow
-                Action:
-                  - s3:PutObject
-                  - s3:GetObject
-                  - s3:GetObjectVersion
-                  - s3:GetBucketVersioning
-              - Resource: "*"
-                Effect: Allow
-                Action:
-                  - ecs:DescribeServices
-                  - ecs:DescribeTaskDefinition
-                  - ecs:DescribeTasks
-                  - ecs:ListTasks
-                  - ecs:RegisterTaskDefinition
-                  - ecs:UpdateService
-                  - codebuild:StartBuild
-                  - codebuild:BatchGetBuilds
-                  - iam:PassRole
+      - PolicyName: root
+        PolicyDocument:
+          Version: 2012-10-17
+          Statement:
+          - Resource: !Join ['', ['arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
+            Effect: Allow
+            Action:
+            - s3:PutObject
+            - s3:GetObject
+            - s3:GetObjectVersion
+            - s3:GetBucketVersioning
+          - Resource: "*"
+            Effect: Allow
+            Action:
+            - ecs:DescribeServices
+            - ecs:DescribeTaskDefinition
+            - ecs:DescribeTasks
+            - ecs:ListTasks
+            - ecs:RegisterTaskDefinition
+            - ecs:UpdateService
+            - codebuild:StartBuild
+            - codebuild:BatchGetBuilds
+            - iam:PassRole
 
   JavaBuildProject:
     Type: AWS::CodeBuild::Project
     Properties:
       Cache:
         Type: S3
-        Location: !Join ['', [ 'arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/gradle-cache']]
+        Location: !Join ['', ['arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/gradle-cache']]
       Artifacts:
         Type: CODEPIPELINE
       Source:
@@ -185,22 +182,29 @@ Resources:
           phases:
             install:
               commands:
-                - echo Install docker daemon
+                - echo Nothing to do in the install phase...
             pre_build:
               commands:
+                - $(aws ecr get-login --no-include-email)
+                - export LC_ALL="en_US.UTF-8"
+                - locale-gen en_US en_US.UTF-8
+                - dpkg-reconfigure locales
+                - locale
                 - TAG="$(echo $CODEBUILD_RESOLVED_SOURCE_VERSION | head -c 8)"
                 - echo "Tag is ${TAG}"
-                - $(aws ecr get-login --no-include-email)
-                - echo starting prebuild for ${REPOSITORY_URI}
+                - IMAGE_URI="${REPOSITORY_URI}:${TAG}"
                 - echo setting gradlew build permissions...
                 - chmod +x gradlew
             build:
               commands:
                 - echo Build started on `date`
-                - echo "Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI}]"
-                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI}
+                - echo "Running [./gradlew clean check installDist -PTAG=${TAG}]"
+                - ./gradlew clean check installDist -PTAG=$TAG -PBRANCH=master
+                - docker build --build-arg application_context="${APPLICATION_CONTEXT_ARG}" --build-arg spring_profiles="${SPRING_PROFILE_ARG}" --tag "${REPOSITORY_URI}:${TAG}" .
+            post_build:
+              commands:
+                - docker push "${REPOSITORY_URI}:${TAG}"
                 - printf '[{"name":"sbjb","imageUri":"%s"}]' "${REPOSITORY_URI}:${TAG}" > images.json
-                - echo [{"name":"sbjb","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
           cache:
             paths:
@@ -214,10 +218,15 @@ Resources:
         Type: "LINUX_CONTAINER"
         PrivilegedMode: true
         EnvironmentVariables:
-          - Name: AWS_DEFAULT_REGION
-            Value: !Ref AWS::Region
-          - Name: REPOSITORY_URI
-            Value: !Sub ${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/${Repository}
+        - Name: AWS_DEFAULT_REGION
+          Value: !Ref AWS::Region
+        - Name: REPOSITORY_URI
+          Value: !Join ['', ["Fn::Sub": '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
+        - Name: SPRING_PROFILE_ARG
+          Value: !Ref SpringProfiles
+        - Name: APPLICATION_CONTEXT_ARG
+          Value:
+            'Fn::ImportValue': !Sub "${ParentServiceStack}-ApplicationContext"
       Name: !Sub Java-build-${AWS::StackName}
       ServiceRole: !Ref CodeBuildServiceRole
 
@@ -230,54 +239,54 @@ Resources:
         Location:
           'Fn::ImportValue': !Sub '${ParentECSStack}-BuildCacheBucket'
       Stages:
-        - Name: GitHub-Source-Code
-          Actions:
-            - Name: Code
-              ActionTypeId:
-                Category: Source
-                Owner: ThirdParty
-                Version: 1
-                Provider: GitHub
-              Configuration:
-                Owner: !Ref GitHubUser
-                Repo: !Ref GitHubRepo
-                Branch: !Ref GitHubBranch
-                OAuthToken: !Ref GitHubToken
-              OutputArtifacts:
-                - Name: ApplicationSourceCode
-              RunOrder: 1
-        - Name: JavaGradleBuild
-          Actions:
-            - Name: Build
-              ActionTypeId:
-                Category: Build
-                Owner: AWS
-                Version: 1
-                Provider: CodeBuild
-              Configuration:
-                ProjectName: !Ref JavaBuildProject
-              InputArtifacts:
-                - Name: ApplicationSourceCode
-              OutputArtifacts:
-                - Name: BuildOutput
-              RunOrder: 1
+      - Name: GitHub-Source-Code
+        Actions:
+        - Name: Code
+          ActionTypeId:
+            Category: Source
+            Owner: ThirdParty
+            Version: 1
+            Provider: GitHub
+          Configuration:
+            Owner: !Ref GitHubUser
+            Repo: !Ref GitHubRepo
+            Branch: !Ref GitHubBranch
+            OAuthToken: !Ref GitHubToken
+          OutputArtifacts:
+          - Name: ApplicationSourceCode
+          RunOrder: 1
+      - Name: JavaGradleBuild
+        Actions:
+        - Name: Build
+          ActionTypeId:
+            Category: Build
+            Owner: AWS
+            Version: 1
+            Provider: CodeBuild
+          Configuration:
+            ProjectName: !Ref JavaBuildProject
+          InputArtifacts:
+          - Name: ApplicationSourceCode
+          OutputArtifacts:
+          - Name: BuildOutput
+          RunOrder: 1
+      - Name: Deploy
+        Actions:
         - Name: Deploy
-          Actions:
-            - Name: Deploy
-              ActionTypeId:
-                Category: Deploy
-                Owner: AWS
-                Version: 1
-                Provider: ECS
-              Configuration:
-                ClusterName:
-                  'Fn::ImportValue': !Sub '${ParentECSStack}-Cluster'
-                ServiceName:
-                  'Fn::ImportValue': !Sub '${ParentServiceStack}-Name'
-                FileName: images.json
-              InputArtifacts:
-                - Name: BuildOutput
-              RunOrder: 1
+          ActionTypeId:
+            Category: Deploy
+            Owner: AWS
+            Version: 1
+            Provider: ECS
+          Configuration:
+            ClusterName:
+              'Fn::ImportValue': !Sub '${ParentECSStack}-Cluster'
+            ServiceName:
+              'Fn::ImportValue': !Sub '${ParentServiceStack}-Name'
+            FileName: images.json
+          InputArtifacts:
+          - Name: BuildOutput
+          RunOrder: 1
 
 Outputs:
   PipelineUrl:

@@ -1,7 +1,5 @@
 #!/bin/bash
 
-set -o errexit -o xtrace
-
 regions=(
 #  ap-northeast-1
 #  ap-southeast-1
@@ -10,26 +8,36 @@ regions=(
 #  eu-west-1
 #  us-east-1
 #  us-east-2
-   us-west-2
+us-west-2
 )
 
 if [ $# -eq 0 ]
-  then
-    echo "Usage : Missing argument. Accepted arguments development/production"
-    exit
+then
+  echo "Missing argument"
+  echo "Usage : scripts/deploy.sh [development/production] [profile]"
+  exit
 fi
 
-echo "Running for : " $1
+
+#environment=production
+environment=$1
+
+if [ -z "$2" ]
+then
+  aws_profile=default
+else
+  aws_profile=$2
+fi
+
+echo "Environment is : " ${environment}
+echo "AWS Profile is is : " ${aws_profile}
+
+source scripts/common/cfn-common.sh
 
 for region in "${regions[@]}"
 do
-
-  aws cloudformation create-stack --stack-name sbjbECSService --template-body file://templates/service.yaml \
-  --parameters file://scripts/$1/parameters-service.json --capabilities CAPABILITY_IAM $2
-
-  aws cloudformation wait stack-create-complete --stack-name sbjbECSService $2
-
-  aws cloudformation create-stack --stack-name sbjbCacheECSDeployment --template-body file://templates/deployment-pipeline.yaml \
-  --parameters file://scripts/$1/parameters.json --capabilities CAPABILITY_IAM $2
-
+  createOrUpdateStack SbjbECRRepository repository
+  syncBaseHealthcheckImage sbjb-service
+  createOrUpdateStack SBJBECSService service
+  createOrUpdateStack SBJBECSDeployment deployment-pipeline
 done
