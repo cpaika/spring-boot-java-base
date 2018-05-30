@@ -53,7 +53,7 @@ Parameters:
   MemoryReservation:
     Type: Number
     Default: 1024
-    AllowedValues: [20, 128, 256, 512, 1024, 1536]
+    AllowedValues: [20, 128, 256, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096]
 
   CPUReservation:
     Type: Number
