@@ -200,10 +200,11 @@ Resources:
                 - echo Build started on `date`
                 - echo "Running [./gradlew clean check installDist -PTAG=${TAG}]"
                 - ./gradlew clean check installDist -PTAG=$TAG -PBRANCH=master
-                - docker build --build-arg application_context="${APPLICATION_CONTEXT_ARG}" --build-arg spring_profiles="${SPRING_PROFILE_ARG}" --tag "${REPOSITORY_URI}:${TAG}" .
+                - docker build --build-arg application_context="${APPLICATION_CONTEXT_ARG}" --build-arg spring_profiles="${SPRING_PROFILE_ARG}" --tag "${REPOSITORY_URI}:${TAG}" --tag "${REPOSITORY_URI}:latest" .
             post_build:
               commands:
                 - docker push "${REPOSITORY_URI}:${TAG}"
+                - docker push "${REPOSITORY_URI}:latest"
                 - printf '[{"name":"sbjb","imageUri":"%s"}]' "${REPOSITORY_URI}:${TAG}" > images.json
                 - echo Build completed on `date`
           cache:
