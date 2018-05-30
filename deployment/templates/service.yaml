@@ -9,6 +9,7 @@ Metadata:
       Parameters:
       - ParentVPCStack
       - ParentECSStack
+      - ParentAlertStack
     - Label:
         default: Service Parameters
       Parameters:
@@ -18,7 +19,6 @@ Metadata:
       - MemoryReservation
       - HealthCheckGracePeriodSeconds
       - ApplicationContext
-      - ContainerImage
     - Label:
         default: Logging Parameters
       Parameters:
@@ -33,6 +33,9 @@ Parameters:
   ParentECSStack:
     Type: String
 
+  ParentAlertStack:
+    Type: String
+
   ContainerName:
     Type: String
 
@@ -42,15 +45,10 @@ Parameters:
 
   HealthCheckGracePeriodSeconds:
     Type: Number
-    Default: 90
+    Default: 180
 
   ApplicationContext:
     Type: String
-    Default: sbjb
-
-  ContainerImage:
-    Type: String
-    Default: bncprojects/base-healthcheck:v1
 
   MemoryReservation:
     Type: Number
@@ -60,7 +58,7 @@ Parameters:
   CPUReservation:
     Type: Number
     Default: 128
-    AllowedValues: [10, 128, 256,512,1024]
+    AllowedValues: [10, 128, 256, 512, 1024]
 
   SplunkToken:
     Type: String
@@ -74,6 +72,9 @@ Parameters:
     Type: String
     AllowedValues: [Development, Production]
 
+Conditions:
+  HasAlertTopic: !Not [!Equals [!Ref ParentAlertStack, '']]
+
 Resources:
   ExternalTargetGroup:
     Type: AWS::ElasticLoadBalancingV2::TargetGroup
@@ -85,7 +86,7 @@ Resources:
       Matcher:
         HttpCode: 200-299
       HealthCheckIntervalSeconds: 15
-      HealthCheckPath: !Sub /${ApplicationContext}/1/ping
+      HealthCheckPath: !Sub "/${ApplicationContext}/metrics/ping"
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10 # Healthcheck timeout must be smaller than the interval
       HealthyThresholdCount: 2
@@ -98,12 +99,12 @@ Resources:
         'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerListener'
       Priority: 2
       Conditions:
-        - Field: path-pattern
-          Values:
-            - !Sub /${ApplicationContext}/*
+      - Field: path-pattern
+        Values:
+        - /${ApplicationContext}/*
       Actions:
-        - TargetGroupArn: !Ref ExternalTargetGroup
-          Type: forward
+      - TargetGroupArn: !Ref ExternalTargetGroup
+        Type: forward
 
   ServiceRole:
     Type: AWS::IAM::Role
@@ -118,7 +119,7 @@ Resources:
             }]
         }
       ManagedPolicyArns:
-        - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
+      - arn:aws:iam::aws:policy/service-role/AmazonEC2ContainerServiceRole
 
   Service:
     Type: AWS::ECS::Service
@@ -142,21 +143,65 @@ Resources:
     Properties:
       Family: !Sub ${AWS::StackName}-Task
       ContainerDefinitions:
-        - Name: !Ref ContainerName
-          Image: !Ref ContainerImage
-          Essential: true
-          Cpu: !Ref CPUReservation
-          MemoryReservation: !Ref MemoryReservation
-          PortMappings:
-            - ContainerPort: 8080
-          LogConfiguration:
-            LogDriver: splunk
-            Options:
-              splunk-format: raw
-              splunk-token: !Ref SplunkToken
-              splunk-url: !Ref SplunkUrl
-              env: !Ref SplunkEnv
-              splunk-insecureskipverify: true
+      - Name: !Ref ContainerName
+        Image: !Join ['', ["Fn::Sub": '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/', "Fn::ImportValue": {"Fn::Sub":'${AWS::StackName}-RepositoryName'}, ':latest']]
+        Essential: true
+        Cpu: !Ref CPUReservation
+        MemoryReservation: !Ref MemoryReservation
+        PortMappings:
+        - ContainerPort: 8080
+        LogConfiguration:
+          LogDriver: splunk
+          Options:
+            splunk-format: raw
+            splunk-token: !Ref SplunkToken
+            splunk-url: !Ref SplunkUrl
+            env: !Ref SplunkEnv
+            splunk-insecureskipverify: true
+
+  HTTPCodeTarget5XXTooHighAlarm:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: '${AWS::StackName} HTTP 500 response code alarm'
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: HTTPCode_Target_5XX_Count
+      Statistic: Sum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: GreaterThanThreshold
+      Threshold: 0
+      TreatMissingData: notBreaching
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerName'
+      - Name: TargetGroup
+        Value: !GetAtt 'ExternalTargetGroup.TargetGroupFullName'
+  NoHealthyServiceAlarm:
+    Condition: HasAlertTopic
+    Type: 'AWS::CloudWatch::Alarm'
+    Properties:
+      AlarmDescription: '${AWS::StackName} has no healthy services'
+      Namespace: 'AWS/ApplicationELB'
+      MetricName: HealthyHostCount
+      Statistic: Minimum
+      Period: 60
+      EvaluationPeriods: 1
+      ComparisonOperator: LessThanThreshold
+      Threshold: 1
+      TreatMissingData: breaching
+      AlarmActions:
+      - 'Fn::ImportValue': !Sub '${ParentAlertStack}-TopicARN'
+      Dimensions:
+      - Name: LoadBalancer
+        Value:
+          'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerName'
+      - Name: TargetGroup
+        Value: !GetAtt 'ExternalTargetGroup.TargetGroupFullName'
+
 Outputs:
   ServiceName:
     Description: 'The name of the service running the ECS'
