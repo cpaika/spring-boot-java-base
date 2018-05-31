@@ -16,6 +16,7 @@ Metadata:
       - ContainerName
       - DesiredCount
       - CPUReservation
+      - MemoryLimit
       - MemoryReservation
       - HealthCheckGracePeriodSeconds
       - ApplicationContext
@@ -51,6 +52,11 @@ Parameters:
     Type: String
 
   MemoryReservation:
+    Type: Number
+    Default: 1024
+    AllowedValues: [20, 128, 256, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096]
+
+  MemoryLimit:
     Type: Number
     Default: 1024
     AllowedValues: [20, 128, 256, 512, 1024, 1536, 2048, 2560, 3072, 3584, 4096]
@@ -147,6 +153,7 @@ Resources:
         Image: !Join ['', ["Fn::Sub": '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/', "Fn::ImportValue": {"Fn::Sub":'${AWS::StackName}-RepositoryName'}, ':latest']]
         Essential: true
         Cpu: !Ref CPUReservation
+        Memory: !Ref MemoryLimit
         MemoryReservation: !Ref MemoryReservation
         PortMappings:
         - ContainerPort: 8080
