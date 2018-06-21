@@ -1,6 +1,6 @@
 [![Build Status](https://travis-ci.com/bnc-projects/spring-boot-java-base.svg?branch=master)](https://travis-ci.com/bnc-projects/spring-boot-java-base)
 [![codecov](https://codecov.io/gh/bnc-projects/spring-boot-java-base/branch/master/graph/badge.svg)](https://codecov.io/gh/bnc-projects/spring-boot-java-base)
-
+[![Known Vulnerabilities](https://snyk.io/test/github/bnc-projects/spring-boot-java-base/badge.svg)](https://snyk.io/test/github/bnc-projects/spring-boot-java-base)
 # Spring Boot Java Base
 
 ## How tos
@@ -42,7 +42,7 @@ Once this has been added build and run the docker container locally.
 
 ### How to: Override application context
 The docker build stage in Gradle accepts a parameter called APPLICATION_CONTEXT, which is passed to Spring boot and used in the Docker container
-Healthcheck. 
+Healthcheck.
 
 ```bash
 ./gradlew clean assemble check docker \
