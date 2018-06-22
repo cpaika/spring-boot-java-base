@@ -1,6 +1,6 @@
 plugins {
     id "com.github.spotbugs" version "1.6.1"
-    id "org.springframework.boot" version "2.0.2.RELEASE"
+    id "org.springframework.boot" version "2.0.3.RELEASE"
     id "io.spring.dependency-management" version "1.0.5.RELEASE"
     id "com.palantir.docker" version "0.19.2"
     id "org.owasp.dependencycheck" version "3.1.2"
@@ -32,7 +32,6 @@ tasks.withType(com.github.spotbugs.SpotBugsTask) {
     reports {
         xml.enabled = false
         html.enabled = true
-
     }
 }
 
@@ -119,9 +118,10 @@ docker {
 }
 
 dependencies {
-    def dropwizardVersion = '3.1.0'
+    def dropwizardVersion = '4.0.0'
+    def springBootVersion = '2.0.3.RELEASE'
 
-    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: '2.0.2.RELEASE'
+    implementation group: 'org.springframework.boot', name: 'spring-boot-starter-web', version: springBootVersion
     implementation group: 'com.github.spotbugs', name: 'spotbugs-annotations', version: '3.1.0'
     implementation group: 'io.dropwizard.metrics', name: 'metrics-core', version: dropwizardVersion
     implementation group: 'io.dropwizard.metrics', name: 'metrics-healthchecks', version: dropwizardVersion
@@ -132,7 +132,7 @@ dependencies {
     testRuntime('org.junit.jupiter:junit-jupiter-engine:5.2.0')
     testImplementation group: 'org.mockito', name: 'mockito-core', version: '2.18.3'
     testImplementation group: 'org.assertj', name: 'assertj-core', version: '3.9.0'
-    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: '2.0.2.RELEASE'
+    testImplementation group: 'org.springframework.boot', name: 'spring-boot-starter-test', version: springBootVersion
 
     // Remove once Mockito 3.x gets released with Junit 5 support
     testImplementation 'name.falgout.jeffrey.testing.junit5:mockito-extension:1.0.1'
