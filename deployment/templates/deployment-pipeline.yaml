@@ -47,48 +47,6 @@ Parameters:
 
 Resources:
 
-  CloudFormationExecutionRole:
-    Type: AWS::IAM::Role
-    DeletionPolicy: Retain
-    Properties:
-      Path: /
-      AssumeRolePolicyDocument: |
-        {
-            "Statement": [{
-                "Effect": "Allow",
-                "Principal": { "Service": [ "cloudformation.amazonaws.com" ]},
-                "Action": [ "sts:AssumeRole" ]
-            }]
-        }
-      Policies:
-      - PolicyName: root
-        PolicyDocument:
-          Version: 2012-10-17
-          Statement:
-          - Resource: "*"
-            Effect: Allow
-            Action:
-            - logs:CreateLogGroup
-            - logs:CreateLogStream
-            - logs:PutLogEvents
-            - ecr:GetAuthorizationToken
-          - Resource: !Join ['', ['arn:aws:s3:::', "Fn::ImportValue": {"Fn::Sub":'${ParentECSStack}-BuildCacheBucket'}, '/*']]
-            Effect: Allow
-            Action:
-            - s3:GetObject
-            - s3:PutObject
-            - s3:GetObjectVersion
-          - Resource: !Join ['', ["Fn::Sub": 'arn:aws:ecr:${AWS::Region}:${AWS::AccountId}:repository/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
-            Effect: Allow
-            Action:
-            - ecr:GetDownloadUrlForLayer
-            - ecr:BatchGetImage
-            - ecr:BatchCheckLayerAvailability
-            - ecr:PutImage
-            - ecr:InitiateLayerUpload
-            - ecr:UploadLayerPart
-            - ecr:CompleteLayerUpload
-
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
