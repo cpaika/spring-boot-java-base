@@ -45,8 +45,14 @@ Parameters:
     Default: default,production
     Type: String
 
-Resources:
+  ServiceEnvironment:
+    Type: String
 
+  NewRelicEnabled:
+    Default: false
+    Type: String
+
+Resources:
   CodeBuildServiceRole:
     Type: AWS::IAM::Role
     Properties:
@@ -156,14 +162,10 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - echo "Running [./gradlew clean check installDist -PTAG=${TAG}]"
-                - ./gradlew clean check installDist -PTAG=$TAG -PBRANCH=master
-                - docker build --build-arg application_context="${APPLICATION_CONTEXT_ARG}" --build-arg spring_profiles="${SPRING_PROFILE_ARG}" --tag "${REPOSITORY_URI}:${TAG}" --tag "${REPOSITORY_URI}:latest" .
-            post_build:
-              commands:
-                - docker push "${REPOSITORY_URI}:${TAG}"
-                - docker push "${REPOSITORY_URI}:latest"
+                - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"]
+                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"
                 - printf '[{"name":"sbjb","imageUri":"%s"}]' "${REPOSITORY_URI}:${TAG}" > images.json
+                - echo [{"name":"sbjb","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
           cache:
             paths:
@@ -181,6 +183,12 @@ Resources:
           Value: !Ref AWS::Region
         - Name: REPOSITORY_URI
           Value: !Join ['', ["Fn::Sub": '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
+        - Name: SPRING_PROFILE_ARG
+          Value: !Ref SpringProfiles
+        - Name: ENVIRONMENT_ARG
+          Value: !Ref ServiceEnvironment
+        - Name: NEWRELIC_ENABLED_ARG
+          Value: !Ref NewRelicEnabled
         - Name: SPRING_PROFILE_ARG
           Value: !Ref SpringProfiles
         - Name: APPLICATION_CONTEXT_ARG
