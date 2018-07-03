@@ -71,8 +71,8 @@ test {
 
 processResources {
     filesMatching("**/version.properties") {
-        def nowUtc = java.time.ZonedDateTime.now(java.time.ZoneId.of("UTC"))
-        def nowNz = java.time.ZonedDateTime.now(java.time.ZoneId.of("Pacific/Auckland"))
+        def nowUtc = java.time.ZonedDateTime.now(java.time.ZoneId.of("UTC")).toString()
+        def nowNz = java.time.ZonedDateTime.now(java.time.ZoneId.of("Pacific/Auckland")).toString()
         def projectBranch = "BRANCH not provided"
         if (project.hasProperty("BRANCH")) {
             projectBranch = project.property("BRANCH")
@@ -81,16 +81,16 @@ processResources {
         if (project.hasProperty("TAG")) {
             projectCommitTag = project.property("TAG")
         }
-        printf("processing resources TAG is [%s]\n", projectCommitTag)
-        printf("processing resources BRANCH is [%s]\n", projectBranch)
-        printf("UTC time is [%s]\n", nowUtc)
-        printf("Auckland time is [%s]\n", nowNz)
+        printf("processing resources TAG is [${projectCommitTag}]\n")
+        printf("processing resources BRANCH is [${projectBranch}]\n")
+        printf("UTC time is [${nowUtc}]\n")
+        printf("Auckland time is [${nowNz}]\n")
         expand(
             "projectVersion": rootProject.version,
             "gitCodeVersion": projectCommitTag,
             "gitBranch": projectBranch,
-            "buildTimestamp": nowNz.toString(),
-            "buildTimestampUtc": nowUtc.toString()
+            "buildTimestamp": nowNz,
+            "buildTimestampUtc": nowUtc
         )
     }
 }
@@ -108,13 +108,37 @@ if (!project.hasProperty("APPLICATION_CONTEXT")) {
 }
 
 docker {
-    name "${REPOSITORY_URI}"
+    name project.hasProperty("REPOSITORY_URI") ? "${REPOSITORY_URI}" : "sbjb"
     tags "${TAG}", 'latest'
-    files jar.archivePath
-    buildArgs([
-        'JAR_FILE': "${bootJar.archiveName}",
-        'APPLICATION_CONTEXT': "${APPLICATION_CONTEXT}"
-    ])
+    files jar.archivePath, "${project.projectDir.absolutePath}/lib/newrelic-agent-4.1.0.jar", "${project.projectDir.absolutePath}/config/newrelic/newrelic.yml"
+    def argMap = [
+        'jar_file'           : "${bootJar.archiveName}",
+        'newrelic_jar_file'  : "newrelic-agent-4.1.0.jar",
+        'newrelic_yml_file'  : "newrelic.yml",
+        'application_context': "${APPLICATION_CONTEXT}"
+    ]
+
+    // These are optional args.
+    if (project.hasProperty("SPRING_PROFILES")) {
+        argMap.spring_profiles = "${SPRING_PROFILES}"
+    }
+    if (project.hasProperty("GUEST_JAVA_OPTS")) {
+        argMap.guest_java_opts = "${GUEST_JAVA_OPTS}"
+    }
+    if (project.hasProperty("ENVIRONMENT")) {
+        argMap.environment = "${ENVIRONMENT}"
+    }
+    if (project.hasProperty("NEWRELIC_ENABLED")) {
+        argMap.newrelic_enabled = "${NEWRELIC_ENABLED}"
+    }
+    buildArgs(argMap)
+
+    printf("docker name is [${name}]\n")
+    printf("docker archive path is [${jar.archivePath}]\n")
+    printf("docker archive name is [${bootJar.archiveName}]\n")
+    printf("docker app jar is [${argMap.jar_file}]\n")
+    printf("docker newrelic jar is [${argMap.newrelic_jar_file}]\n")
+    printf("docker newrelic yml is [${argMap.newrelic_yml_file}]\n")
 }
 
 dependencies {
