@@ -24,7 +24,7 @@ For IDEs run one of the following commands before importing into your IDE.
 ```
 
 ### How to: Build and run locally on Docker
-1. `./gradlew clean assemble check docker`
+1. `./gradlew clean assemble check docker -PREPOSITORY_URI=spring-boot-java-base`
 2. `docker run -p 8080:8080 -i -t "spring-boot-java-base"`
 
 #### Debug / Profiling
