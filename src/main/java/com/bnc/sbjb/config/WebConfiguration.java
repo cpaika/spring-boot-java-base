@@ -45,7 +45,7 @@ public class WebConfiguration {
 
     @Bean
     public ServletRegistrationBean servletRegistrationBean() {
-        return new ServletRegistrationBean(new AdminServlet(), "/1/metrics/*");
+        return new ServletRegistrationBean(new AdminServlet(), "/metrics/*");
     }
 
     /**

@@ -4,11 +4,12 @@ updateStack()
 {
   STACK_NAME=$1
   TEMPLATE=$2
+  PARAMS_JSON=parameters-${TEMPLATE//\//-}.json
 
   echo "Updating stack - ${STACK_NAME}"
 
   aws cloudformation update-stack --stack-name ${STACK_NAME} --template-body file://templates/${TEMPLATE}.yaml \
- --parameters file://scripts/${environment}/parameters-${TEMPLATE}.json --capabilities CAPABILITY_IAM --profile=${aws_profile} && \
+ --parameters file://scripts/${environment}/${PARAMS_JSON} --capabilities CAPABILITY_IAM --profile=${aws_profile} && \
  aws cloudformation wait stack-update-complete --stack-name ${STACK_NAME} --profile=${aws_profile} || true
 }
 
@@ -16,11 +17,12 @@ createStack()
 {
   STACK_NAME=$1
   TEMPLATE=$2
+  PARAMS_JSON=parameters-${TEMPLATE//\//-}.json
 
   echo "Creating stack - ${STACK_NAME}"
 
   aws cloudformation create-stack --timeout-in-minutes 30 --enable-termination-protection --timeout-in-minutes 30 --stack-name ${STACK_NAME} --template-body file://templates/${TEMPLATE}.yaml \
- --parameters file://scripts/${environment}/parameters-${TEMPLATE}.json --capabilities CAPABILITY_IAM --profile=${aws_profile} && \
+ --parameters file://scripts/${environment}/${PARAMS_JSON} --capabilities CAPABILITY_IAM --profile=${aws_profile} && \
  aws cloudformation wait stack-create-complete --stack-name ${STACK_NAME} --profile=${aws_profile} || true
 }
 

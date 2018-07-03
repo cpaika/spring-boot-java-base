@@ -36,6 +36,10 @@ Parameters:
 
   ParentAlertStack:
     Type: String
+    Default: ""
+
+  ParentAlertStack:
+    Type: String
 
   ContainerName:
     Type: String
