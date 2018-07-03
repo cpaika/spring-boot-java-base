@@ -1,4 +1,4 @@
-FROM alphafoobar/open:8u151-jre-alpine3.7
+FROM bncprojects/openjdk:8u151-jre-alpine3.7
 
 ARG guest_java_opts
 ARG spring_profiles=default,production
