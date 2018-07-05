@@ -1,0 +1,13 @@
+spring:
+  application:
+    name: Spring Boot Java Base
+
+# Actuator Settings
+management:
+  endpoints:
+    web:
+      exposure:
+        include: health,info,metrics,threaddump
+  endpoint:
+    health:
+      show-details: ALWAYS

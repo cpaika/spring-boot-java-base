@@ -1,6 +1,8 @@
 package com.bnc.sbjb.rest;
 
-import org.assertj.core.api.Assertions;
+import static org.assertj.core.api.Assertions.assertThat;
+
+import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -10,14 +12,14 @@ import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
 @ExtendWith(SpringExtension.class)
-public class SimpleErrorControllerTest {
+public class ControllerTest {
 
     @Autowired
     private TestRestTemplate template;
 
-    @org.junit.jupiter.api.Test
-    public void error() {
-        String actualResponse = template.getForObject("/invalidurl", String.class);
-        Assertions.assertThat(actualResponse).isEqualTo("404");
+    @Test
+    void testHelloWorld() {
+        String actual = template.getForObject("/hello", String.class);
+        assertThat(actual).isEqualTo("Hello World");
     }
 }
