@@ -162,8 +162,8 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"]
-                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PAPPLICATION_CONTEXT="${APPLICATION_CONTEXT_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"
+                - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"]
+                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"
                 - printf '[{"name":"sbjb","imageUri":"%s"}]' "${REPOSITORY_URI}:${TAG}" > images.json
                 - echo [{"name":"sbjb","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
@@ -191,9 +191,6 @@ Resources:
           Value: !Ref NewRelicEnabled
         - Name: SPRING_PROFILE_ARG
           Value: !Ref SpringProfiles
-        - Name: APPLICATION_CONTEXT_ARG
-          Value:
-            'Fn::ImportValue': !Sub "${ParentServiceStack}-ApplicationContext"
       Name: !Sub Java-build-${AWS::StackName}
       ServiceRole: !Ref CodeBuildServiceRole
 
