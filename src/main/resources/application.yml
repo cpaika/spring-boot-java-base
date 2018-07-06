@@ -1,13 +1,23 @@
 spring:
   application:
     name: Spring Boot Java Base
+server:
+  servlet:
+    context-path: /sbjb
 
 # Actuator Settings
 management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,threaddump
+        include: health,info,metrics,threaddump,env
   endpoint:
     health:
       show-details: ALWAYS
+  metrics:
+    export:
+      newrelic:
+        account-id:
+        api-key:
+        enabled: false
+
