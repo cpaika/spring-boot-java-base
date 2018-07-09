@@ -13,11 +13,19 @@ management:
         include: health,info,metrics,threaddump,env
   endpoint:
     health:
-      show-details: ALWAYS
+      show-details: WHEN_AUTHORIZED
+  metrics:
+    export:
+      newrelic:
+        enabled: false
+---
+
+spring:
+  profiles: production
+management:
   metrics:
     export:
       newrelic:
         account-id:
         api-key:
-        enabled: false
-
+        enabled: true
