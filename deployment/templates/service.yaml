@@ -93,7 +93,7 @@ Resources:
       Matcher:
         HttpCode: 200-299
       HealthCheckIntervalSeconds: 15
-      HealthCheckPath: !Sub '/${ApplicationContext}/actuator/health'
+      HealthCheckPath: !Sub '/actuator/health'
       HealthCheckProtocol: HTTP
       HealthCheckTimeoutSeconds: 10 # Healthcheck timeout must be smaller than the interval
       HealthyThresholdCount: 2
@@ -221,3 +221,8 @@ Outputs:
     Value: !Sub "${ApplicationContext}/"
     Export:
       Name: !Sub '${AWS::StackName}-ApplicationContext'
+  ContainerName:
+    Description: 'The container name for the service'
+    Value: !Ref ContainerName
+    Export:
+      Name: !Sub '${AWS::StackName}-ContainerName'
