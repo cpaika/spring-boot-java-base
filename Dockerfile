@@ -1,4 +1,6 @@
-FROM bncprojects/openjdk:8u171-jre-alpine3.7
+FROM FROM openjdk:8u171-jre-alpine3.8
+
+
 
 ARG guest_java_opts
 ARG spring_profiles=default,production
