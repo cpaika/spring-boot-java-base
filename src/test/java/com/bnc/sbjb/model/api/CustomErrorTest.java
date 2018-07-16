@@ -1,4 +1,4 @@
-package com.bnc.sbjb.model;
+package com.bnc.sbjb.model.api;
 
 import static org.assertj.core.api.Assertions.assertThat;
 
