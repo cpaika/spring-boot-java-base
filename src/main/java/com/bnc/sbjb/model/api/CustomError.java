@@ -1,4 +1,4 @@
-package com.bnc.sbjb.model;
+package com.bnc.sbjb.model.api;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
