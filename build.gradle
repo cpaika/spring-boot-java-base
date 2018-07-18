@@ -1,5 +1,5 @@
 plugins {
-    id "com.github.spotbugs" version "1.6.1"
+    id "com.github.spotbugs" version "1.6.2"
     id "org.springframework.boot" version "2.0.3.RELEASE"
     id "io.spring.dependency-management" version "1.0.5.RELEASE"
     id "com.palantir.docker" version "0.20.1"
@@ -82,33 +82,10 @@ if (!project.hasProperty("TAG")) {
 }
 
 docker {
-    name project.hasProperty("REPOSITORY_URI") ? "${REPOSITORY_URI}" : "sbjb"
+    name project.hasProperty("REPOSITORY_URI") ? "${REPOSITORY_URI}" : "${project.name}"
     tags "${TAG}", 'latest'
-    files jar.archivePath, "${project.projectDir.absolutePath}/lib/newrelic-agent-4.1.0.jar", "${project.projectDir.absolutePath}/config/newrelic/newrelic.yml"
-    def argMap = [
-        'jar_file'           : "${bootJar.archiveName}",
-        'newrelic_enabled' : "true"
-    ]
-
-    // These are optional args.
-    if (project.hasProperty("SPRING_PROFILES")) {
-        argMap.spring_profiles = "${SPRING_PROFILES}"
-    }
-    if (project.hasProperty("GUEST_JAVA_OPTS")) {
-        argMap.guest_java_opts = "${GUEST_JAVA_OPTS}"
-    }
-    if (project.hasProperty("ENVIRONMENT")) {
-        argMap.environment = "${ENVIRONMENT}"
-    }
-    if (project.hasProperty("NEWRELIC_ENABLED")) {
-        argMap.newrelic_enabled = "${NEWRELIC_ENABLED}"
-    }
-    buildArgs(argMap)
-
-    printf("docker name is [${name}]\n")
-    printf("docker archive path is [${jar.archivePath}]\n")
-    printf("docker archive name is [${bootJar.archiveName}]\n")
-    printf("docker app jar is [${argMap.jar_file}]\n")
+    files bootJar.archivePath, "${project.projectDir.absolutePath}/lib/newrelic-agent-4.1.0.jar", "${project.projectDir.absolutePath}/config/newrelic/newrelic.yml"
+    buildArgs(['JAR_FILE': "${bootJar.archiveName}"])
 }
 
 dependencies {

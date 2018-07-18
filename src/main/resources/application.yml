@@ -21,7 +21,6 @@ management:
       newrelic:
         enabled: false
 ---
-
 spring:
   profiles: production
 management:

@@ -19,7 +19,12 @@ Metadata:
       - MemoryLimit
       - MemoryReservation
       - HealthCheckGracePeriodSeconds
+    - Label:
+        default: Application Parameters
+      Parameters:
       - ApplicationContext
+      - JavaOptions
+      - SpringProfile
     - Label:
         default: Logging Parameters
       Parameters:
@@ -50,6 +55,12 @@ Parameters:
     Default: 180
 
   ApplicationContext:
+    Type: String
+
+  JavaOptions:
+    Type: String
+
+  SpringProfile:
     Type: String
 
   MemoryReservation:
@@ -104,11 +115,11 @@ Resources:
     Properties:
       ListenerArn:
         'Fn::ImportValue': !Sub '${ParentECSStack}-ExternalLoadBalancerListener'
-      Priority: 2
+      Priority: 6
       Conditions:
       - Field: path-pattern
         Values:
-        - !Sub "/${ApplicationContext}/*"
+        - !Sub "${ApplicationContext}/*"
       Actions:
       - TargetGroupArn: !Ref ExternalTargetGroup
         Type: forward
@@ -166,6 +177,11 @@ Resources:
             splunk-url: !Ref SplunkUrl
             env: !Ref SplunkEnv
             splunk-insecureskipverify: true
+        Environment:
+          - Name: JAVA_OPTS
+            Value: !Ref JavaOptions
+          - Name: SPRING_PROFILES_ACTIVE
+            Value: !Ref SpringProfile
 
   HTTPCodeTarget5XXTooHighAlarm:
     Condition: HasAlertTopic
@@ -219,8 +235,6 @@ Outputs:
   ApplicationContext:
     Description: 'The application context of the service'
     Value: !Sub "${ApplicationContext}/"
-    Export:
-      Name: !Sub '${AWS::StackName}-ApplicationContext'
   ContainerName:
     Description: 'The container name for the service'
     Value: !Ref ContainerName
