@@ -24,29 +24,30 @@ For IDEs run one of the following commands before importing into your IDE.
 ```
 
 ### How to: Build and run locally on Docker
-1. `./gradlew clean assemble check docker -PREPOSITORY_URI=spring-boot-java-base`
-2. `docker run -p 8080:8080 -i -t "spring-boot-java-base"`
+1. `./gradlew clean assemble check docker`
+2. `docker run -e SPRING_PROFILES_ACTIVE=localhost -p 8080:8080 -i -t spring-boot-java-base`
 
 #### Debug / Profiling
-To debug the container locally, add the following line in to the ENTRYPOINT line after `java` and before `-jar`.
+To debug the container locally, the `JAVA_OPTS` environment variable can be provided when running the container.
 ```bash
-"-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005"
+docker run -p 8080:8080 -i -t -e JAVA_OPTS="-agentlib:jdwp=transport=dt_socket,server=y,suspend=n,address=5005" spring-boot-java-base
 ```
-Once this has been added build and run the docker container locally.
+
+### Enabling New Relic
+New relic can be enabled by providing the following `JAVA_OPTS` environment variable. Ensure to provide the correct `newrelic.environment` system property. To configure New Relic add/update the Application Environments section in `newrelic.yml`, more information can be found [here](https://docs.newrelic.com/docs/agents/java-agent/configuration/java-agent-configuration-config-file). 
+```base
+docker run -p 8080:8080 -i -t -e JAVA_OPTS="-javaagent:newrelic/newrelic.jar -Dnewrelic.environment=${environment} -Dnewrelic.config.file=newrelic/newrelic.yml" spring-boot-java-base
+```
 
 ### How to: Build production equivalent container
 ```bash
-./gradlew clean assemble check docker dockerTag -PTAG=$(git rev-parse --verify HEAD --short) -PBRANCH=$(git rev-parse --abbrev-ref HEAD) \
-  -PREPOSITORY_URI=${DOCKER_REPO}${IMAGE_NAME}
+./gradlew clean assemble check docker dockerTag -PTAG=$(git rev-parse --verify HEAD --short) -PREPOSITORY_URI=${DOCKER_REPO}${IMAGE_NAME}
 ```
 
-### How to: Override application context
-The docker build stage in Gradle accepts a parameter called APPLICATION_CONTEXT, which is passed to Spring boot and used in the Docker container
-Healthcheck.
-
-```bash
-./gradlew clean assemble check docker \
-  -PAPPLICATION_CONTEXT="your-app-context"
+#### Recommended JAVA_OPTS
+It is strongly recommended that the following Java Options are set when running the service in production.
+```base
+JAVA_OPTS="-XX:+UseG1GC -XX:+UnlockExperimentalVMOptions -XX:+UseCGroupMemoryLimitForHeap -javaagent:newrelic/newrelic.jar -Dnewrelic.environment=${environment} -Dnewrelic.config.file=/newrelic.yml -Djava.security.egd=file:/dev/./urandom"
 ```
 
 ## For more tasks run

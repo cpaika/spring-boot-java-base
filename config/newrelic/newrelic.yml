@@ -29,7 +29,7 @@ common: &default_settings
   # app_name: My Application;My Application 2
   # This setting is required. Up to 3 different application names can be specified.
   # The first application name must be unique.
-  app_name: Spring boot java app name
+  app_name: Spring Boot Java Base
 
   # To enable high security, set this property to true. When in high
   # security mode, the agent will use SSL and obfuscated SQL. Additionally,
@@ -258,7 +258,6 @@ common: &default_settings
   # There is a maximum of 64 labels per agent.  Names and values are limited to 255 characters.
   # Names and values may not contain colons (:) or semicolons (;).
   labels:
-
     # An example label
     #label_name: label_value
 
@@ -274,10 +273,19 @@ common: &default_settings
 
 # NOTE if your application has other named environments, you should
 # provide configuration settings for these environments here.
+localhost:
+  <<: *default_settings
+  app_name: Spring Boot Java Base (localhost)
+  agent_enabled: false
+  license_key:
 
 development:
   <<: *default_settings
-  app_name: Spring boot java app name (Development)
+  app_name: Spring Boot Java Base (development)
+  agent_enabled: true
+  license_key:
 
 production:
   <<: *default_settings
+  agent_enabled: true
+  license_key:

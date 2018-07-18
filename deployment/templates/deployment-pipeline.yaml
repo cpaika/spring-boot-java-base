@@ -16,10 +16,6 @@ Metadata:
       - GitHubRepo
       - GitHubBranch
       - GitHubToken
-    - Label:
-        default: Service Parameters
-      Parameters:
-      - SpringProfiles
 
 Parameters:
   ParentECSStack:
@@ -40,17 +36,6 @@ Parameters:
   GitHubToken:
     Type: String
     NoEcho: true
-
-  SpringProfiles:
-    Default: default,production
-    Type: String
-
-  ServiceEnvironment:
-    Type: String
-
-  NewRelicEnabled:
-    Default: false
-    Type: String
 
 Resources:
   CodeBuildServiceRole:
@@ -162,8 +147,8 @@ Resources:
             build:
               commands:
                 - echo Build started on `date`
-                - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"]
-                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PBRANCH=master -PREPOSITORY_URI=${REPOSITORY_URI} -PSPRING_PROFILES="${SPRING_PROFILE_ARG}" -PNEWRELIC_ENABLED="${NEWRELIC_ENABLED_ARG}" -PENVIRONMENT="${ENVIRONMENT_ARG}"
+                - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PREPOSITORY_URI=${REPOSITORY_URI}]
+                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PREPOSITORY_URI=${REPOSITORY_URI}"
                 - printf '[{"name":"%s","imageUri":"%s"}]' "${CONTAINER_NAME_ARG}" "${REPOSITORY_URI}:${TAG}" > images.json
                 - echo [{"name":"${CONTAINER_NAME_ARG}","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
@@ -183,12 +168,6 @@ Resources:
           Value: !Ref AWS::Region
         - Name: REPOSITORY_URI
           Value: !Join ['', ["Fn::Sub": '${AWS::AccountId}.dkr.ecr.${AWS::Region}.amazonaws.com/', "Fn::ImportValue": {"Fn::Sub":'${ParentServiceStack}-RepositoryName'}, '']]
-        - Name: SPRING_PROFILE_ARG
-          Value: !Ref SpringProfiles
-        - Name: ENVIRONMENT_ARG
-          Value: !Ref ServiceEnvironment
-        - Name: NEWRELIC_ENABLED_ARG
-          Value: !Ref NewRelicEnabled
         - Name: CONTAINER_NAME_ARG
           Value:
             'Fn::ImportValue': !Sub '${ParentServiceStack}-ContainerName'
