@@ -148,7 +148,7 @@ Resources:
               commands:
                 - echo Build started on `date`
                 - echo Running [./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PREPOSITORY_URI=${REPOSITORY_URI}]
-                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PREPOSITORY_URI=${REPOSITORY_URI}"
+                - ./gradlew clean assemble check docker dockerTag dockerPush -PTAG=${TAG} -PREPOSITORY_URI=${REPOSITORY_URI}
                 - printf '[{"name":"%s","imageUri":"%s"}]' "${CONTAINER_NAME_ARG}" "${REPOSITORY_URI}:${TAG}" > images.json
                 - echo [{"name":"${CONTAINER_NAME_ARG}","imageUri":"${REPOSITORY_URI}:${TAG}"}]
                 - echo Build completed on `date`
