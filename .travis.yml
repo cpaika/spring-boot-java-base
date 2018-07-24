@@ -57,3 +57,6 @@ jobs:
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
+notifications:
+  slack:
+    secure:
