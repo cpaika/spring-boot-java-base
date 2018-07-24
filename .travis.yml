@@ -3,6 +3,9 @@ jdk:
 - openjdk8
 env:
   global:
+  # Following encrypted environment variables must be present for successful deployment
+  # DEV_ACCOUNT_ID,DEV_ACCESS_KEY_ID,DEV_SECRET_ACCESS_KEY
+  # PROD_ACCOUNT_ID,PROD_ACCESS_KEY_ID,PROD_SECRET_ACCESS_KEY
   - AWS_DEFAULT_REGION=
   - ECR_REPOSITORY_NAME=
   - TASK_NAME=
@@ -21,6 +24,7 @@ jobs:
   include:
   - stage: test
   - stage: Deploy DEV
+    if: env(DEV_ACCOUNT_ID) is present
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=development
@@ -37,6 +41,7 @@ jobs:
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
   - stage: Deploy Production
+    if: env(PROD_ACCOUNT_ID) is present
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=production
