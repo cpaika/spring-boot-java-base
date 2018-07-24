@@ -89,11 +89,6 @@ Parameters:
   SplunkUrl:
     Type: String
 
-  SplunkEnv:
-    Default: Production
-    Type: String
-    AllowedValues: [Development, Production]
-
 Conditions:
   HasAlertTopic: !Not [!Equals [!Ref ParentAlertStack, '']]
 
@@ -182,7 +177,6 @@ Resources:
             splunk-format: raw
             splunk-token: !Ref SplunkToken
             splunk-url: !Ref SplunkUrl
-            env: !Ref SplunkEnv
             splunk-insecureskipverify: true
         Environment:
           - Name: JAVA_OPTS
