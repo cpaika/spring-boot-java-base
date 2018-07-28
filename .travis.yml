@@ -24,7 +24,6 @@ cache:
   - "$HOME/.local"
 jobs:
   include:
-  - stage: test
   - stage: Deploy DEV
     if: branch = master
     jdk: openjdk8
