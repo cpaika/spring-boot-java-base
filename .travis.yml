@@ -24,7 +24,7 @@ jobs:
   include:
   - stage: test
   - stage: Deploy DEV
-    if: env(TASK_NAME) is present
+    if: branch = master
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=development
@@ -41,7 +41,7 @@ jobs:
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
   - stage: Deploy Production
-    if: env(TASK_NAME) is present
+    if: branch = master
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=production
