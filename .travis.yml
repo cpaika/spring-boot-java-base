@@ -24,6 +24,7 @@ cache:
   - "$HOME/.local"
 jobs:
   include:
+  if: branch = master AND NOT type IN (pull_request)
   - stage: deploy to development
     jdk: openjdk8
     env:
@@ -35,7 +36,8 @@ jobs:
     - AWS_ACCESS_KEY_ID=$DEV_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY=$DEV_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$DEV_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
-    script: if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then deployment/scripts/common/push-docker-image.sh; fi
+    script: skip
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
@@ -54,7 +56,8 @@ jobs:
     - AWS_ACCESS_KEY_ID=$PROD_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY=$PROD_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$PROD_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
-    script: if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then deployment/scripts/common/push-docker-image.sh; fi
+    script: skip
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
