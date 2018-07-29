@@ -24,8 +24,7 @@ cache:
   - "$HOME/.local"
 jobs:
   include:
-  - if: branch = master AND NOT type IN (pull_request)
-    name: Deploy to development
+  - stage: deploy to development
     jdk: openjdk8
     env:
     - SPLUNK_TOKEN=
@@ -36,14 +35,16 @@ jobs:
     - AWS_ACCESS_KEY_ID=$DEV_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY=$DEV_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$DEV_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
-    script: deployment/scripts/common/push-docker-image.sh
+    script: skip
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
-  - if: branch = master AND NOT type IN (pull_request)
-    name: Deploy to production
+      on:
+        branch: master
+  - stage: deploy to production
     jdk: openjdk8
     env:
     - SPLUNK_TOKEN=
@@ -54,15 +55,18 @@ jobs:
     - AWS_ACCESS_KEY_ID=$PROD_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY=$PROD_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$PROD_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
-    script: deployment/scripts/common/push-docker-image.sh
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
+      on:
+        branch: master
   allow_failures:
     - jdk: openjdk10
     - jdk: openjdk11
+  fast_finish: true
 notifications:
   slack:
     secure:
