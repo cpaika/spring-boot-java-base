@@ -24,8 +24,8 @@ cache:
   - "$HOME/.local"
 jobs:
   include:
-  - stage: Deploy DEV
-    if: branch = master
+  - if: branch = master AND NOT type IN (pull_request)
+    name: Deploy to development
     jdk: openjdk8
     env:
     - SPLUNK_TOKEN=
@@ -42,9 +42,9 @@ jobs:
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
-  - stage: Deploy Production
+  - if: branch = master AND NOT type IN (pull_request)
+    name: Deploy to production
     jdk: openjdk8
-    if: branch = master
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=production
