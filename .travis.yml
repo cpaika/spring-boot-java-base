@@ -1,6 +1,8 @@
 language: java
 jdk:
 - openjdk8
+- openjdk10
+- openjdk11
 env:
   global:
   # Following encrypted environment variables must be present for successful deployment
@@ -22,9 +24,9 @@ cache:
   - "$HOME/.local"
 jobs:
   include:
-  - stage: test
-  - stage: Deploy DEV
-    if: env(TASK_NAME) is present
+  - if: branch = master AND NOT type IN (pull_request)
+    name: Deploy to development
+    jdk: openjdk8
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=development
@@ -40,8 +42,9 @@ jobs:
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
-  - stage: Deploy Production
-    if: env(TASK_NAME) is present
+  - if: branch = master AND NOT type IN (pull_request)
+    name: Deploy to production
+    jdk: openjdk8
     env:
     - SPLUNK_TOKEN=
     - ENVIRONMENT=production
@@ -57,6 +60,9 @@ jobs:
       provider: script
       script: bash deployment/scripts/common/deploy-ecs.sh --cluster $CLUSTER_NAME --service $SERVICE_NAME --task
         $TASK_NAME --task-def task_def_${TRAVIS_BUILD_NUMBER}.json
+  allow_failures:
+    - jdk: openjdk10
+    - jdk: openjdk11
 notifications:
   slack:
     secure:
