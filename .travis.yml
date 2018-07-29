@@ -36,7 +36,7 @@ jobs:
     - AWS_SECRET_ACCESS_KEY=$DEV_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$DEV_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
     script: skip
-    before_deploy: if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then deployment/scripts/common/push-docker-image.sh; fi
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
@@ -55,7 +55,7 @@ jobs:
     - AWS_ACCESS_KEY_ID=$PROD_ACCESS_KEY_ID
     - AWS_SECRET_ACCESS_KEY=$PROD_SECRET_ACCESS_KEY
     - REPOSITORY_URI=$PROD_ACCOUNT_ID.dkr.ecr.$AWS_DEFAULT_REGION.amazonaws.com/$ECR_REPOSITORY_NAME
-    before_deploy: if [[ $TRAVIS_PULL_REQUEST == "false" ]] && [[ $TRAVIS_BRANCH == "master" ]]; then deployment/scripts/common/push-docker-image.sh; fi
+    before_deploy: deployment/scripts/common/push-docker-image.sh
     deploy:
       skip_cleanup: true
       provider: script
@@ -66,6 +66,7 @@ jobs:
   allow_failures:
     - jdk: openjdk10
     - jdk: openjdk11
+  fast_finish: true
 notifications:
   slack:
     secure:
