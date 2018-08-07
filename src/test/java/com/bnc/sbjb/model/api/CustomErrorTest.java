@@ -3,45 +3,27 @@ package com.bnc.sbjb.model.api;
 import static org.assertj.core.api.Assertions.assertThat;
 
 import java.time.Instant;
-import java.util.ArrayList;
-import java.util.List;
-import org.junit.jupiter.api.BeforeEach;
+import java.util.Collections;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
 
-public class CustomErrorTest {
-
-    private CustomError customError;
-
-    @BeforeEach
-    void setup() {
-        customError = new CustomError(HttpStatus.NOT_FOUND, "not found");
-    }
-
-    @Test
-    void testHttpStatusIdempotent() {
-        customError.setStatus(HttpStatus.CONFLICT);
-        assertThat(customError.getStatus()).isEqualTo(HttpStatus.CONFLICT);
-    }
+class CustomErrorTest {
 
     @Test
     void testTimestampIdempotent() {
-        Instant now = Instant.now();
-        customError.setTimestamp(now);
-        assertThat(customError.getTimestamp()).isEqualTo(now);
+        assertThat(new CustomError().getTimestamp()).isBeforeOrEqualTo(Instant.now());
     }
 
     @Test
     void testMessageIdempotent() {
+        CustomError customError = new CustomError();
         customError.setMessage("test-message");
         assertThat(customError.getMessage()).isEqualTo("test-message");
     }
 
     @Test
     void testSubErrorIdempotent() {
-        List<SubError> errors = new ArrayList<SubError>();
-        errors.add(new TestSubError());
-        customError.setSubErrors(errors);
+        CustomError customError = new CustomError();
+        customError.addSubErrors(Collections.singletonList(new TestSubError()));
         assertThat(customError.getSubErrors().size()).isEqualTo(1);
     }
 }

@@ -3,44 +3,25 @@ package com.bnc.sbjb.model.api;
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.annotation.JsonInclude.Include;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
-import org.springframework.http.HttpStatus;
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
 
-@JsonInclude(Include.NON_NULL)
+@JsonInclude(Include.NON_EMPTY)
 public class CustomError {
 
-    private HttpStatus status;
-    private Instant timestamp;
     private String message;
 
-    private List<SubError> subErrors;
+    private final Instant timestamp = Instant.now();
+    private final List<SubError> subErrors = new ArrayList<>();
 
-    private CustomError() {
-        timestamp = Instant.now();
+    public CustomError() {
+        // Visible for testing JSON deserialization.
     }
 
-    public CustomError(HttpStatus status, String message) {
-        this();
-        this.status = status;
-        this.message = message;
-    }
-
-    public HttpStatus getStatus() {
-        return status;
-    }
-
-    public void setStatus(HttpStatus status) {
-        this.status = status;
-    }
-
-    public Instant getTimestamp() {
-        return timestamp;
-    }
-
-    public void setTimestamp(Instant timestamp) {
-        this.timestamp = timestamp;
-    }
-
+    @Nullable
     public String getMessage() {
         return message;
     }
@@ -49,11 +30,20 @@ public class CustomError {
         this.message = message;
     }
 
-    public List<SubError> getSubErrors() {
-        return subErrors;
+    @Nonnull
+    public Instant getTimestamp() {
+        return timestamp;
     }
 
-    public void setSubErrors(List<SubError> subErrors) {
-        this.subErrors = subErrors;
+    @Nonnull
+    public List<SubError> getSubErrors() {
+        return Collections.unmodifiableList(subErrors);
+    }
+
+    /**
+     * Adds all errors to existing list of errors.
+     */
+    public void addSubErrors(@Nonnull List<SubError> subErrors) {
+        this.subErrors.addAll(subErrors);
     }
 }

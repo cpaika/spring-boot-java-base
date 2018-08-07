@@ -1,11 +1,13 @@
 package com.bnc.sbjb.rest;
 
+import static org.springframework.http.HttpStatus.NOT_FOUND;
+
 import com.bnc.sbjb.model.api.CustomError;
-import javax.servlet.http.HttpServletRequest;
 import org.springframework.boot.web.servlet.error.ErrorController;
-import org.springframework.http.HttpStatus;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.ResponseStatus;
 import org.springframework.web.bind.annotation.RestController;
+import reactor.core.publisher.Mono;
 
 @RestController
 public class DefaultErrorController implements ErrorController {
@@ -13,8 +15,11 @@ public class DefaultErrorController implements ErrorController {
     private static final String PATH = "/error";
 
     @RequestMapping(value = PATH)
-    public CustomError error(HttpServletRequest request) {
-        return new CustomError(HttpStatus.NOT_FOUND, "Not Found");
+    @ResponseStatus(value = NOT_FOUND)
+    public Mono<CustomError> error() {
+        CustomError error = new CustomError();
+        error.setMessage("Not Found");
+        return Mono.just(error);
     }
 
     @Override

@@ -10,6 +10,7 @@ import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.context.SpringBootTest.WebEnvironment;
 import org.springframework.boot.test.web.client.TestRestTemplate;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.context.junit.jupiter.SpringExtension;
 
 @SpringBootTest(webEnvironment = WebEnvironment.RANDOM_PORT)
@@ -24,8 +25,8 @@ class DefaultErrorControllerTest {
 
     @Test
     void error() {
-        CustomError actual = template.getForObject("/invalidurl", CustomError.class);
-        assertThat(actual.getStatus()).isEqualTo(HttpStatus.NOT_FOUND);
+        ResponseEntity<CustomError> forEntity = template.getForEntity("/invalidurl", CustomError.class);
+        assertThat(forEntity.getStatusCode()).isEqualTo(HttpStatus.NOT_FOUND);
     }
 
     @Test
