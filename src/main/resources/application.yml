@@ -6,6 +6,10 @@ spring:
   jackson:
     default-property-inclusion: non_empty
 
+logging:
+  level:
+    io.micrometer.newrelic: WARN
+
 resource:
   path: /sbjb
 
@@ -14,7 +18,7 @@ management:
   endpoints:
     web:
       exposure:
-        include: health,info,metrics,threaddump,env
+        include: '*'
   endpoint:
     health:
       show-details: ALWAYS
